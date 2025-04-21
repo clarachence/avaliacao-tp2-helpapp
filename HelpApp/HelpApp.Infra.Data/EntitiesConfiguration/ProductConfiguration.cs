@@ -8,6 +8,7 @@ namespace HelpApp.Infra.Data.EntitiesConfiguration
     {
         public void Configure(EntityTypeBuilder<Product> builder)
         {
+            builder.ToTable("Categories");
             builder.HasKey(t => t.Id);
             builder.Property(p => p.Name).HasMaxLength(100).IsRequired();
             builder.Property(p => p.Description).HasMaxLength(200).IsRequired();
