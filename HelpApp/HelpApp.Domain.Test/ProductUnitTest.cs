@@ -1,11 +1,28 @@
 ﻿using HelpApp.Domain.Entities;
+using HelpApp.Infra.Data.Context;
+using HelpApp.Infra.Data.Repositories;
+using Microsoft.EntityFrameworkCore;
 using FluentAssertions;
 using Xunit;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace HelpApp.Domain.Test
 {
     public class ProductUnitTest
     {
+
+        private readonly ApplicationDbContext _context;
+        private readonly ProductRepository _repository;
+        public ProductUnitTest()
+        {
+            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+                .UseSqlServer()
+                .Options;
+
+            _context = new ApplicationDbContext(options);
+            _repository = new ProductRepository(_context);
+
+        }
         #region Testes Positivos
         [Fact(DisplayName ="Create Product With Parameters Full")]
         public void CreateProduct_WithValidParameters_ResultObjectValisState()
@@ -84,5 +101,73 @@ namespace HelpApp.Domain.Test
                  .WithMessage("Invalid image name, too long, maximum 250 characters.");
         }
         #endregion
+
+
+        #region Testes Create
+        [Fact(DisplayName = "Create Product in Repository")]
+        public async Task CreateProduct_Repository_ShouldReturnProduct()
+        {
+            var product = new Product(1, "Notebook", "Descrição do notebook", 3500.00m, 5, "https://img/notebook.jpg");
+            var result = await _repository.Create(product);
+            result.Should().NotBeNull();
+            result.Name.Should().Be("Notebook");
+        }
+        #endregion
+
+
+
+        #region Testes Read
+        [Fact(DisplayName = "Get Category By Id")]
+        public async Task GetById_ExistingId_ShouldReturnProduct()
+        {
+            var product = new Product(2, "Mouse", "Mouse ópticos", 50.00m, 15, "https://img/notebook.jpg");
+            await _repository.Create(product);
+            var result = await _repository.GetById(2);
+
+            result.Should().NotBeNull();
+            result.Id.Should().Be(2);
+            result.Name.Should().Be("Mouse");
+        }
+
+        [Fact(DisplayName = "Get All Products")]
+        public async Task GetProducts_ShouldReturnAll()
+        {
+            await _repository.Create(new Product(3, "Teclado", "Teclado mecânico", 120.00m, 8, "https://img/teclado.jpg"));
+            await _repository.Create(new Product(4, "Monitor", "Monitor Full Hd", 800.00m, 3, "https://img/monitor.jpg"));
+            var products = await _repository.GetProducts();
+            products.Should().NotBeEmpty();
+            products.Count().Should().BeGreaterOrEqualTo(2);
+        }
+        #endregion
+        #region Testes Update
+        [Fact(DisplayName = "Update Product")]
+        public async Task UpdateProduct_ShouldUpdateSuccessfully()
+        {
+            var product = new Product(5, "Impressora", "Impressora antifa", 250.00m, 2, "https://img/imp.jpg");
+            await _repository.Create(product);
+
+            product.Update("Impressora Nova", "Nova descrição", 300.00m, 5, "https://img/ipm-nova.jpg");
+            var updated = await _repository.Update(product);
+            updated.Name.Should().Be("Impressora Nova");
+            updated.Price.Should().Be(300.00m);
+        }
+        #endregion
+        #region Testes Delete
+        [Fact(DisplayName = "Remove Product")]
+        public async Task RemoveProduct_ShouldDeleteSuccessfully()
+        {
+            var product = new Product(6, "Cadeira", "Cadeira gamer", 600.00m, 1, "https://img/cadeira.jpg");
+            await _repository.Create(product);
+
+            
+            var removed = await _repository.Remove(product);
+            removed.Should().NotBeNull();
+
+
+            var result = await _repository.GetById(6);
+            result.Should().BeNull();
+        }
+        #endregion
+
     }
 }
