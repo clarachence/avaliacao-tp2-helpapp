@@ -15,7 +15,7 @@ namespace HelpApp.Domain.Test
         public CategoryUnitTest()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlServer()
+                .UseInMemoryDatabase(databaseName: "TesteDatabase")
                 .Options;
 
             _context = new ApplicationDbContext(options);
@@ -47,7 +47,7 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Create Valid Category")]
         public async Task Create_Category_ValidData_ShouldReturnCreatedCategory()
         {
-            var category = new Category(1 ,"Eletrônicos");
+            var category = new Category("Eletrônicos");
             var result = await _repository.Create(category);
             result.Should().NotBeNull();
             result.Name.Should().Be("Eletrônicos");

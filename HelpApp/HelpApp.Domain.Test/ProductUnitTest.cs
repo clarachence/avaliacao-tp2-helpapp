@@ -16,7 +16,7 @@ namespace HelpApp.Domain.Test
         public ProductUnitTest()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlServer()
+                .UseInMemoryDatabase(databaseName: "TesteDatabase")
                 .Options;
 
             _context = new ApplicationDbContext(options);
@@ -31,7 +31,8 @@ namespace HelpApp.Domain.Test
                 "Product Name", 
                 "Product Description", 
                 9.99m, 99, 
-                "https://img/product.jpg");
+                "https://img/product.jpg",
+                2);
             action.Should()
                 .NotThrow<HelpApp.Domain.Validation.DomainExceptionValidation>();
         }
@@ -41,7 +42,7 @@ namespace HelpApp.Domain.Test
         public void CreateProduct_NegativeIdValue_DomainExceptionInvalidId()
         {
             Action action = () => new Product(-1, "Product Name", "Product Description", 9.99m,
-                99, "product image");
+                99, "product image", 1);
 
             action.Should().Throw<HelpApp.Domain.Validation.DomainExceptionValidation>()
                 .WithMessage("Update Invalid Id value");
@@ -51,7 +52,7 @@ namespace HelpApp.Domain.Test
         public void CreateProduct_ShortNameValue_DomainExceptionShortName()
         {
             Action action = () => new Product(1, "Pr", "Product Description", 9.99m, 99,
-                "product image");
+                "product image", 1);
             action.Should().Throw<HelpApp.Domain.Validation.DomainExceptionValidation>()
                  .WithMessage("Invalid name, too short, minimum 3 characters.");
         }
@@ -59,7 +60,7 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Create Product With Null URL Image")]
         public void CreateProduct_WithNullImageName_NoDomainException()
         {
-            Action action = () => new Product(1, "Product Name", "Product Description", 9.99m, 99, null);
+            Action action = () => new Product(1, "Product Name", "Product Description", 9.99m, 99, null, 1);
             action.Should().NotThrow<HelpApp.Domain.Validation.DomainExceptionValidation>();
         }
 
@@ -67,7 +68,7 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Create Product With URL Image Empty")]
         public void CreateProduct_WithEmptyImageName_NoDomainException()
         {
-            Action action = () => new Product(1, "Product Name", "Product Description", 9.99m, 99, "");
+            Action action = () => new Product(1, "Product Name", "Product Description", 9.99m, 99, "", 1);
             action.Should().NotThrow<HelpApp.Domain.Validation.DomainExceptionValidation>();
         }
 
@@ -76,7 +77,7 @@ namespace HelpApp.Domain.Test
         public void CreateProduct_InvalidPriceValue_DomainException(int value)
         {
             Action action = () => new Product(1, "Product Name", "Product Description", value,
-                99, "");
+                99, "", 1);
             action.Should().Throw<HelpApp.Domain.Validation.DomainExceptionValidation>()
                  .WithMessage("Invalid price negative value.");
         }
@@ -86,7 +87,7 @@ namespace HelpApp.Domain.Test
         public void CreateProduct_InvalidStockValue_ExceptionDomainNegativeValue(int value)
         {
             Action action = () => new Product(1, "Pro", "Product Description", 9.99m, value,
-                "product image");
+                "product image", 1);
             action.Should().Throw<HelpApp.Domain.Validation.DomainExceptionValidation>()
                    .WithMessage("Invalid stock negative value.");
         }
@@ -95,7 +96,7 @@ namespace HelpApp.Domain.Test
         public void CreateProduct_LongImageName_DomainExceptionLongImageName(string url)
         {
             Action action = () => new Product(1, "Product Name", "Product Description", 9.99m,
-                99, url);
+                99, url, 1);
             action.Should()
                 .Throw<HelpApp.Domain.Validation.DomainExceptionValidation>()
                  .WithMessage("Invalid image name, too long, maximum 250 characters.");
@@ -107,7 +108,15 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Create Product in Repository")]
         public async Task CreateProduct_Repository_ShouldReturnProduct()
         {
-            var product = new Product(1, "Notebook", "Descrição do notebook", 3500.00m, 5, "https://img/notebook.jpg");
+
+            var category = new Category("Eletrônicos");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+            var product = new Product(1, "Notebook", "Descrição do notebook", 3500.00m, 5, "https://img/notebook.jpg", 1)
+            {
+                CategoryId = category.Id
+            };
             var result = await _repository.Create(product);
             result.Should().NotBeNull();
             result.Name.Should().Be("Notebook");
@@ -120,7 +129,15 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Get Category By Id")]
         public async Task GetById_ExistingId_ShouldReturnProduct()
         {
-            var product = new Product(2, "Mouse", "Mouse ópticos", 50.00m, 15, "https://img/notebook.jpg");
+            var category = new Category("Periféricos");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+
+            var product = new Product(2, "Mouse", "Mouse ópticos", 50.00m, 15, "https://img/notebook.jpg", 1)
+            {
+                CategoryId = category.Id
+            };
             await _repository.Create(product);
             var result = await _repository.GetById(2);
 
@@ -132,8 +149,19 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Get All Products")]
         public async Task GetProducts_ShouldReturnAll()
         {
-            await _repository.Create(new Product(3, "Teclado", "Teclado mecânico", 120.00m, 8, "https://img/teclado.jpg"));
-            await _repository.Create(new Product(4, "Monitor", "Monitor Full Hd", 800.00m, 3, "https://img/monitor.jpg"));
+
+            var category = new Category("Acessórios");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+            await _repository.Create(new Product(3, "Teclado", "Teclado mecânico", 120.00m, 8, "https://img/teclado.jpg", 1)
+            {
+                CategoryId = category.Id
+            });
+            await _repository.Create(new Product(4, "Monitor", "Monitor Full Hd", 800.00m, 3, "https://img/monitor.jpg", 1)
+                            {
+                CategoryId = category.Id
+            });
             var products = await _repository.GetProducts();
             products.Should().NotBeEmpty();
             products.Count().Should().BeGreaterOrEqualTo(2);
@@ -143,10 +171,18 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Update Product")]
         public async Task UpdateProduct_ShouldUpdateSuccessfully()
         {
-            var product = new Product(5, "Impressora", "Impressora antifa", 250.00m, 2, "https://img/imp.jpg");
+
+            var category = new Category("Impressoras");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+            var product = new Product(5, "Impressora", "Impressora antifa", 250.00m, 2, "https://img/imp.jpg", 1)
+            {
+                CategoryId = category.Id
+            };
             await _repository.Create(product);
 
-            product.Update("Impressora Nova", "Nova descrição", 300.00m, 5, "https://img/ipm-nova.jpg");
+            product.Update("Impressora Nova", "Nova descrição", 300.00m, 5, "https://img/ipm-nova.jpg", 1);
             var updated = await _repository.Update(product);
             updated.Name.Should().Be("Impressora Nova");
             updated.Price.Should().Be(300.00m);
@@ -156,7 +192,13 @@ namespace HelpApp.Domain.Test
         [Fact(DisplayName = "Remove Product")]
         public async Task RemoveProduct_ShouldDeleteSuccessfully()
         {
-            var product = new Product(6, "Cadeira", "Cadeira gamer", 600.00m, 1, "https://img/cadeira.jpg");
+            var category = new Category("Mobiliário");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+            var product = new Product(6, "Cadeira", "Cadeira gamer", 600.00m, 1, "https://img/cadeira.jpg", 1)
+            {
+                CategoryId = category.Id
+            };
             await _repository.Create(product);
 
             

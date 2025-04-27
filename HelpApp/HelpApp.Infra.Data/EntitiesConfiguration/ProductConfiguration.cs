@@ -32,16 +32,47 @@ namespace HelpApp.Infra.Data.EntitiesConfiguration
 
 
             builder.Property(x => x.CategoryId)
-           .HasMaxLength(255);
+           .IsRequired();
 
-            builder.HasOne(x => x.Category).WithMany()
+            builder.HasOne(x => x.Category)
+                .WithMany()
                 .HasForeignKey(x => x.CategoryId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasData(
-                new Product(1, "Cerno da amiseta", "Camiseta da Nike", 200.90m, 100, "camiseta.jpg") { CategoryId = 3 },
-                new Product(2, "Tablet", "Tablet Sansung s6 Lite", 49.90m, 200, "tablet.jpg") { CategoryId = 2 },
-                new Product(3, "Caderno", "CadTilibra", 25.00m, 50, "smartphone.jpg") { CategoryId = 1 });
+                new
+                {
+                    Id = 1,
+                    Name = "Camiseta",
+                    Description = "Camiseta da Nike",
+                    Price = 200.90m,
+                    Stock = 100,
+                    Image = "camiseta.jpg",
+                    CategoryId = 3
+                },
+                 new
+                 {
+                     Id = 2,
+                     Name = "Tablet",
+                     Description = "Tablet Sansung s6 Lite",
+                     Price = 29.90m,
+                     Stock = 200,
+                     Image = "tablet.jpg",
+                     CategoryId = 2
+                 },
+                  new
+                  {
+                      Id = 3,
+                      Name = "Caderno",
+                      Description = "Caderno Tilibra",
+                      Price = 24.00m,
+                      Stock = 50,
+                      Image = "caderno.jpg",
+                      CategoryId = 1
+                  }
+                  );
+             
+              
         }
     }
 }

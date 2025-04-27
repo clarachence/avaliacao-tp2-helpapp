@@ -13,23 +13,35 @@ namespace HelpApp.Domain.Entities
         public int Stock { get; set; }
         public string Image { get; set; }
         public int CategoryId { get; set; }
+        public Category Category { get; set; }
         #endregion
 
-        public Product(string name, string description, decimal price, int stock, string image)
+        public Product() {
+        }
+        public Product(string name, string description, decimal price, int stock, string image, int categoryId)
         {
+            CategoryId = categoryId;
             ValidateDomain(name, description, price, stock, image);
         }
 
-        public Product(int id, string name, string description, decimal price, int stock, string image)
+        public Product(int id, string name, string description, decimal price, int stock, string image, int categoryId)
         {
             DomainExceptionValidation.When(id < 0, "Update Invalid Id value");
             Id = id;
+            CategoryId = categoryId;
             ValidateDomain(name, description, price, stock, image);
         }
 
+        public void Update (string name, string description, decimal price, int stock, string image, int categoryId)
+        {
+            Name = name;
+            Description = description;
+            Price = price;
+            Stock = stock;
+            Image = image;
+        }
 
 
-        public Category Category { get; set; }
 
         private void ValidateDomain(string name, string description, decimal price, int stock, string image)
         {
@@ -50,6 +62,12 @@ namespace HelpApp.Domain.Entities
             DomainExceptionValidation.When(stock < 0, "Invalid stock negative value.");
 
             DomainExceptionValidation.When(image.Length > 250, "Invalid image name, too long, maximum 250 characters.");
+
+            Name = name;
+            Description = description;
+            Price = price;
+            Stock = stock;
+            Image = image;
 
         }
     }
