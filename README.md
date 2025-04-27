@@ -51,18 +51,23 @@ Migration aplicada com sucesso diretamente do Visual Studio Terminal
 
 # 🖼️ Prints de evidência (opcional)
 Insira prints aqui comprovando:
+![image](https://github.com/user-attachments/assets/83abb5ae-5542-4f60-8231-bfaa548ce018)
+![image](https://github.com/user-attachments/assets/ae1ce169-d4a2-4f0b-8685-dfaa19e16b06)
+![image](https://github.com/user-attachments/assets/276df780-6f5e-42c8-8e4d-30b1ca5afe7f)
+
+
 
 Aplicação bem-sucedida da migration no Azure
 
 Tabelas e dados populados
 
 # 👨‍💻 Dados do aluno
-Nome: [Seu Nome Aqui]
-Curso: Desenvolvimento de Sistemas – 3º Semestre
+Nome: Clara Domitila Chence
+Curso: Desenvolvimento de Software Multiplataforma – 3º Semestre
 
 Professor: Victor Icoma
 
-Branch da entrega: avaliacao-githubaluno
+Branch da entrega: avaliacao-clarachence
 
 ## 🧱 Estrutura da aplicação
 
