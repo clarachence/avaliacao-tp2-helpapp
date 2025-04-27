@@ -15,7 +15,7 @@ namespace HelpApp.Domain.Test
         public CategoryUnitTest()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TesteDatabase")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             _context = new ApplicationDbContext(options);
@@ -79,7 +79,39 @@ namespace HelpApp.Domain.Test
             categories.Count().Should().BeGreaterOrEqualTo(2);
         }
         #endregion
+        #region Testes Update
+        [Fact(DisplayName = "Update Category")]
+        public async Task UpdateCategory_ShouldUpdateSuccessfully()
+        {
 
+            var category = new Category("Informática");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+
+
+            category.Update("Eletrônicos");
+            var updated = await _repository.Update(category);
+            updated.Should().NotBeNull();
+            updated.Name.Should().Be("Eletrônicos");
+
+        }
+        #endregion
+        #region Testes Delete
+        [Fact(DisplayName = "Remove Category")]
+        public async Task RemoveCategory_ShouldUpdateSuccessfully()
+        {
+
+            var category = new Category("Estudos");
+            await _context.Categories.AddAsync(category);
+            await _context.SaveChangesAsync();
+            var removed = await _repository.Remove(category);
+
+            removed.Should().NotBeNull();
+            var result = await _repository.GetById(category.Id);
+            result.Should().BeNull();
+
+        }
+        #endregion
 
 
     }

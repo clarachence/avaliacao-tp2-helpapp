@@ -1,4 +1,5 @@
 ﻿using HelpApp.Domain.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace HelpApp.Domain.Entities
 {
@@ -36,6 +37,12 @@ namespace HelpApp.Domain.Entities
 
             Name = name;
         }
+
+        public void Update(string name)
+        {
+            ValidateDomain(name);
+        }
         #endregion
+
     }
 }
